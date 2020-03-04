@@ -1,0 +1,10 @@
+
+
+    load('pointset_brain.mat');
+    [x,y]=Pointset_brain(37);
+    pointset(1,:,38)=x';
+    pointset(2,:,38)=y';
+    close all;
+    save('pointset_brain.mat','pointset');
+
+    

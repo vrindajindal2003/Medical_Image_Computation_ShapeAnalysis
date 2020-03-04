@@ -1,0 +1,249 @@
+load('pointset_brain.mat');
+% x1 = pointset(1,:,10);
+% y1 = pointset(2,:,10);
+% x1 = reshape(x1,32,1);
+% y1 = reshape(y1,32,1);
+% plot(x1,y1,'red')
+% pause;
+
+%%plotting unaligned dataset
+figure(1);
+for i=1:40
+    pointsetplot=zeros(2,33);
+    pointsetplot(1,1:32)=pointset(1,1:32,i);
+    pointsetplot(1,33)=pointset(1,1,i);
+    pointsetplot(2,1:32)=pointset(2,1:32,i);
+    pointsetplot(2,33)=pointset(2,1,i);
+    
+    plot(pointsetplot(1,:) , pointsetplot(2,:) , 'color' , [rand rand rand])
+    title('Unaligned Data Set')
+    hold on;
+end
+% pause;
+
+
+mean_ = mean_brain_finder(pointset);     % returns 32,2 matrix
+ aligned_pt_set1 = zeros(2,32,40);
+ 
+    for i=1:40
+        pt_set1 = mean_;      
+        pt_set2 = pointset(:,:,i)';
+        aligned_pt_set1(:,:,i) = align_brain_pointset(pt_set1 , pt_set2)';        %aligning all shapes to mean
+    end
+    figure(2);
+  
+   distance = zeros(40,1);
+for i=1:40
+    mean_plot=zeros(33,2);
+    mean_plot(1:32,1)=mean_(1:32,1);
+    mean_plot(33,1)=mean_(1,1);
+    mean_plot(1:32,2)=mean_(1:32,2);
+    mean_plot(33,2)=mean_(1,2);
+    p = plot(mean_plot(:,1) , mean_plot(:,2) , 'color','black');
+    p(1).LineWidth = 2;
+     hold on;
+     aligned_pt_set1_plot=zeros(2,33);
+     aligned_pt_set1_plot(1,1:32)=aligned_pt_set1(1,1:32,i);
+     aligned_pt_set1_plot(1,33)=aligned_pt_set1(1,1,i);
+    
+     aligned_pt_set1_plot(2,1:32)=aligned_pt_set1(2,1:32,i);
+     aligned_pt_set1_plot(2,33)=aligned_pt_set1(2,1,i);
+    plot(aligned_pt_set1_plot(1,:) , aligned_pt_set1_plot(2,:) , 'color' , [rand rand rand])
+    distance(i) = norm(aligned_pt_set1(:,:,i) - mean_');
+   
+end
+title('Aligned data set along with mean(thick black)');
+% pause;
+
+figure(3);
+%subplot(1,3,2);
+
+plot(mean_plot(:,1) , mean_plot(:,2),'-o')  
+title('Mean with pointset');
+% pause;
+
+mean_flattened = reshape(mean_ , 32*2 , 1) ;   %flatten to bring in preshape space
+[eigen_vectors, eigen_values] = modes_brain_finder(mean_flattened,mean_,pointset);
+%eigen_vectors = eigen(1);
+%eigen_values = eigen(2);
+figure(4);
+
+plot(real(eigen_values));
+title('Eigenvalues');
+% pause;
+
+
+prev_mode = mean_flattened - 3*eigen_values(64)*eigen_vectors(:,64);
+next_mode = mean_flattened + 3*eigen_values(64)*eigen_vectors(:,64);
+prev_mode = reshape(prev_mode , 32,2);
+next_mode = reshape(next_mode , 32,2);
+prev_mode = align_brain_pointset(mean_,prev_mode);
+next_mode = align_brain_pointset(mean_,next_mode);
+hold on;
+
+figure(5);
+
+subplot(3,3,2);
+
+plot(mean_plot(:,1) , mean_plot(:,2),'-*');
+title('First mode of variation')
+
+prev_mode_plot=zeros(33,2);
+prev_mode_plot(1:32,1)=prev_mode(1:32,1);
+prev_mode_plot(33,1)=prev_mode(1,1);
+prev_mode_plot(1:32,2)=prev_mode(1:32,2);
+prev_mode_plot(33,2)=prev_mode(1,2);
+
+subplot(3,3,1);
+
+plot(prev_mode_plot(:,1),prev_mode_plot(:,2),'-*');
+
+next_mode_plot=zeros(33,2);
+next_mode_plot(1:32,1)=next_mode(1:32,1);
+next_mode_plot(33,1)=next_mode(1,1);
+next_mode_plot(1:32,2)=next_mode(1:32,2);
+next_mode_plot(33,2)=next_mode(1,2);
+
+subplot(3,3,3);
+plot(next_mode_plot(:,1),next_mode_plot(:,2) , '-*');
+% pause;
+
+prev_mode_2 = mean_flattened - 3*eigen_values(63)*eigen_vectors(:,63);
+next_mode_2 = mean_flattened + 3*eigen_values(63)*eigen_vectors(:,63);
+prev_mode_2 = reshape(prev_mode_2 , 32,2);
+next_mode_2 = reshape(next_mode_2 , 32,2);
+prev_mode_2 = align_brain_pointset(mean_,prev_mode_2);
+next_mode_2 = align_brain_pointset(mean_,next_mode_2);
+
+%figure(6);
+
+subplot(3,3,5);
+
+plot(mean_plot(:,1) , mean_plot(:,2),'-*');
+title('Second mode of variation');
+prev_mode2_plot=zeros(33,2);
+prev_mode2_plot(1:32,1)=prev_mode_2(1:32,1);
+prev_mode2_plot(33,1)=prev_mode_2(1,1);
+prev_mode2_plot(1:32,2)=prev_mode_2(1:32,2);
+prev_mode2_plot(33,2)=prev_mode_2(1,2);
+
+
+subplot(3,3,4);
+plot(prev_mode2_plot(:,1),prev_mode2_plot(:,2),'-*');
+next_mode2_plot=zeros(33,2);
+next_mode2_plot(1:32,1)=next_mode_2(1:32,1);
+next_mode2_plot(33,1)=next_mode_2(1,1);
+next_mode2_plot(1:32,2)=next_mode_2(1:32,2);
+next_mode2_plot(33,2)=next_mode_2(1,2);
+
+subplot(3,3,6);
+plot(next_mode2_plot(:,1),next_mode2_plot(:,2),'-*');
+% pause;
+
+prev_mode_3 = mean_flattened - 3*eigen_values(62)*eigen_vectors(:,62);
+next_mode_3 = mean_flattened + 3*eigen_values(62)*eigen_vectors(:,62);
+prev_mode_3 = reshape(prev_mode_3 , 32,2);
+next_mode_3 = reshape(next_mode_3 , 32,2);
+prev_mode_3 = align_brain_pointset(mean_,prev_mode_3);
+next_mode_3 = align_brain_pointset(mean_,next_mode_3);
+
+%figure(7);
+
+subplot(3,3,8);
+
+plot(mean_(:,1) , mean_(:,2),'-*');
+title('Third mode of variation');
+prev_mode3_plot=zeros(33,2);
+prev_mode3_plot(1:32,1)=prev_mode_3(1:32,1);
+prev_mode3_plot(33,1)=prev_mode_3(1,1);
+prev_mode3_plot(1:32,2)=prev_mode_3(1:32,2);
+prev_mode3_plot(33,2)=prev_mode_3(1,2);
+
+subplot(3,3,7);
+plot(prev_mode3_plot(:,1),prev_mode3_plot(:,2),'-*');
+next_mode3_plot=zeros(33,2);
+next_mode3_plot(1:32,1)=next_mode_3(1:32,1);
+next_mode3_plot(33,1)=next_mode_3(1,1);
+next_mode3_plot(1:32,2)=next_mode_3(1:32,2);
+next_mode3_plot(33,2)=next_mode_3(1,2);
+
+
+subplot(3,3,9);
+plot(next_mode3_plot(:,1),next_mode3_plot(:,2),'-*');
+% pause;
+
+figure(8);
+[M,I] = min(distance);
+disp(I);
+plot(mean_plot(:,1),mean_plot(:,2),'color','red');
+hold on;
+pointsetplot=zeros(2,33);
+    pointsetplot(1,1:32)=aligned_pt_set1(1,1:32,I);
+    pointsetplot(1,33)=aligned_pt_set1(1,1,I);
+    pointsetplot(2,1:32)=aligned_pt_set1(2,1:32,I);
+    pointsetplot(2,33)=aligned_pt_set1(2,1,I);
+plot(pointsetplot(1,:) , pointsetplot(2,:),'color','blue');
+legend('Mean','Closest');
+% pause;
+
+distance2 = zeros(40,1);
+distance3 = zeros(40,1);
+for i=1:40
+    distance2(i) = norm(prev_mode - align_brain_pointset(prev_mode,pointset(:,:,i)'));
+    distance3(i) = norm(next_mode - align_brain_pointset(next_mode , pointset(:,:,i)'));
+end
+
+[M2 , i2] = min(distance2);
+[M3 , i3] = min(distance3);
+i3
+figure(9);
+A = align_brain_pointset(prev_mode,pointset(:,:,i2)');
+B = align_brain_pointset(next_mode , pointset(:,:,i3)');
+pointsetplot=zeros(2,33);
+    pointsetplot(1,1:32)=A(1:32,1);
+    pointsetplot(1,33)=A(1,1);
+    pointsetplot(2,1:32)=A(1:32,2);
+    pointsetplot(2,33)=A(1,2);
+
+plot(pointsetplot(1,:) , pointsetplot(2,:),'color','red');
+hold on;
+plot(prev_mode_plot(:,1),prev_mode_plot(:,2),'color','blue');
+legend('Mean - first mode','Closest ')
+% pause;
+
+figure(10);
+pointsetplot=zeros(2,33);
+    pointsetplot(1,1:32)=B(1:32,1);
+    pointsetplot(1,33)=B(1,1);
+    pointsetplot(2,1:32)=B(1:32,2);
+    pointsetplot(2,33)=B(1,2);
+
+plot(pointsetplot(1,:) , pointsetplot(2,:),'color','red');
+hold on;
+plot(next_mode_plot(:,1) , next_mode_plot(:,2),'color','blue');
+legend('Mean + first mode','Closest');
+
+
+
+
+% % mean_ = mean_brain_finder(pointset); 
+% % plot(mean_(:,1) , mean_(:,2),'red') ;
+% mean_flattened = reshape(mean_ , 32*2 , 1) ;
+% 
+% [eigen_vectors, eigen_values] = modes_brain_finder(mean_flattened,mean_,pointset);
+% 
+% prev_mode = mean_flattened - 3*eigen_values(64)*eigen_vectors(:,64);
+% next_mode = mean_flattened + 3*eigen_values(64)*eigen_vectors(:,64);
+% prev_mode = reshape(prev_mode , 32,2);
+% next_mode = reshape(next_mode , 32,2);
+% %prev_mode = align_leaf_pointset(mean_,prev_mode);
+% %next_mode = align_leaf_pointset(mean_,next_mode);
+% hold on;
+% figure(2);
+% plot(prev_mode(:,1),prev_mode(:,2),'-o');
+% 
+% figure(3);
+% plot(next_mode(:,1),next_mode(:,2) ,'-o');
+
+
+

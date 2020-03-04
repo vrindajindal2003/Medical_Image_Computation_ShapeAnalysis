@@ -1,0 +1,6 @@
+load('pointset.mat')
+[x,y] = Pointset(54);
+pointset(1,:,53) = x';
+pointset(2,:,53) = y';
+save('pointset.mat', 'pointset');
+%Plotter(1);
